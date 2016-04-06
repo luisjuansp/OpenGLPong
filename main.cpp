@@ -5,6 +5,10 @@
 #endif
 #include <iostream>
 #include <cmath>
+#include <AL/al.h>
+#include <AL/alc.h>
+// #include <AL/alu.h>
+#include <AL/alut.h>
 
 using namespace std;
 
@@ -44,6 +48,76 @@ bool running = false; //Pause and Unpause
 bool game = false; //Start the game
 int score1 = 0;
 int score2 = 0;
+
+// Buffers hold sound data.
+ALuint Buffer;
+// Sources are points emitting sound.
+ALuint Source;
+// Position of the source sound.
+ALfloat SourcePos[] = { 0.0, 0.0, 0.0 };
+// Velocity of the source sound.
+ALfloat SourceVel[] = { 0.0, 0.0, 0.0 };
+// Position of the listener.
+ALfloat ListenerPos[] = { 0.0, 0.0, 0.0 };
+// Velocity of the listener.
+ALfloat ListenerVel[] = { 0.0, 0.0, 0.0 };
+// Orientation of the listener. (first 3 elements are "at", second 3 are "up")
+ALfloat ListenerOri[] = { 0.0, 0.0, -1.0, 0.0, 1.0, 0.0 };
+
+ALboolean LoadALData()
+{
+	// Variables to load into.
+	ALenum format;
+	ALsizei size;
+	ALvoid* data;
+	ALsizei freq;
+	ALboolean loop;
+	signed char *sfile = (signed char*)"bounce.wav";
+	ALbyte* file = sfile;
+
+	// Load wav data into a buffer.
+	alGenBuffers(1, &Buffer);
+
+	if (alGetError() != AL_NO_ERROR)
+		return AL_FALSE;
+
+	alutLoadWAVFile(file, &format, &data, &size, &freq, &loop);
+	alBufferData(Buffer, format, data, size, freq);
+	alutUnloadWAV(format, data, size, freq);
+
+	// Bind buffer with a source.
+	alGenSources(1, &Source);
+	if (alGetError() != AL_NO_ERROR)
+		return AL_FALSE;
+
+	alSourcei (Source, AL_BUFFER,   Buffer   );
+	alSourcef (Source, AL_PITCH,    1.0f     );
+	alSourcef (Source, AL_GAIN,     1.0f     );
+	alSourcefv(Source, AL_POSITION, SourcePos);
+	alSourcefv(Source, AL_VELOCITY, SourceVel);
+	alSourcei (Source, AL_LOOPING,  loop     );
+
+	// Do another error check and return.
+	if (alGetError() == AL_NO_ERROR)
+		return AL_TRUE;
+
+	return AL_FALSE;
+}
+
+void SetListenerValues()
+{
+	alListenerfv(AL_POSITION,    ListenerPos);
+	alListenerfv(AL_VELOCITY,    ListenerVel);
+	alListenerfv(AL_ORIENTATION, ListenerOri);
+}
+
+void KillALData()
+{
+	alDeleteBuffers(1, &Buffer);
+	alDeleteSources(1, &Source);
+	alutExit();
+}
+
 
 void objInit(){
 	//BALL INIT
@@ -122,6 +196,8 @@ void checkCollisions(){
 	//Vertical borders
 	if(abs(ball.y) + ball.rad > 4){
 		ball.diry *= -1;
+		alSourceStop(Source);
+		alSourcePlay(Source); 
 	}
 
 	Rectangle rb;
@@ -134,9 +210,13 @@ void checkCollisions(){
 	//Collision with left panel
 	if(checkCollision(rb, rp1)){
 		(ball.dirx < 0) ? ball.dirx = -ball.dirx : ball.dirx;
+		alSourceStop(Source);
+		alSourcePlay(Source); 
 	//Collision with right panel
 	} else if(checkCollision(rb, rp2)){
 		(ball.dirx > 0) ? ball.dirx = -ball.dirx : ball.dirx;
+		alSourceStop(Source);
+		alSourcePlay(Source); 
 	//Goal on right side
 	} else if(ball.x > 4){
 		objInit();
@@ -263,7 +343,7 @@ void reshape(int w, int h) {
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(60, ((double)w)/h, 1, 10000);
+	gluPerspective(60, ((double)w)/h, 1, 100);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(0, 0, 7.5, 0, 0, 0, 0, 1, 0);
@@ -342,6 +422,8 @@ void init() {
 int main(int argc, char** argv)
 {
 	glutInit(&argc,argv);
+	alutInit(&argc,argv);
+	alGetError();
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(500,500);
 	glutInitWindowPosition(100,100);
@@ -349,6 +431,10 @@ int main(int argc, char** argv)
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
 	init();
+	if (LoadALData() == AL_FALSE)
+		return -1;
+	SetListenerValues();
+	atexit(KillALData);
 	glutKeyboardFunc(myKeyboard);
 	glutSpecialFunc(SpecialInput);
 	glutTimerFunc(50, timer, 0);

@@ -14,7 +14,14 @@
 
 #include <iostream>
 #include <cmath>
+#include "imageloader.h"
+#include <stdlib.h>
+#include <stdio.h>
+using namespace std;
 
+string fullPath = __FILE__;
+const int TEXTURE_COUNT = 24;
+static GLuint texName[TEXTURE_COUNT];
 
 using namespace std;
 
@@ -46,6 +53,7 @@ struct Padel
     float g;
     float b;
     float speed;
+    bool boy;
 };
 
 Ball ball;
@@ -133,7 +141,6 @@ void KillALData()
 }
 #endif
 
-
 void objInit(){
     //BALL INIT
     ball.x = 0;
@@ -153,28 +160,160 @@ void objInit(){
     p1.x = -3.75;
     p1.y = 0;
     p1.z = 0;
-    p1.sizex = 0.25;
+    p1.sizex = 0.5;
     p1.sizey = 2;
     p1.sizez = 1;
     p1.r = 0;
     p1.g = 0;
     p1.b = 0;
     p1.speed = 0;
+    p1.boy = true;
     
     //P2 INIT
     p2.x = 3.75;
     p2.y = 0;
     p2.z = 0;
-    p2.sizex = 0.25;
+    p2.sizex = 0.5;
     p2.sizey = 2;
     p2.sizez = 1;
     p2.r = 0;
     p2.g = 0;
     p2.b = 0;
     p2.speed = 0;
+    p2.boy = false;
     
     
 }
+
+
+//Makes the image into a texture, and returns the id of the texture
+void loadTexture(Image* image,int k)
+{
+    
+    glBindTexture(GL_TEXTURE_2D, texName[k]); //Tell OpenGL which texture to edit
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    //Filtros de ampliacion y redución con cálculo mas cercano no es tan bueno pero es rápido
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    
+    //Filtros de ampliacion y redución con cálculo lineal es mejo pero son más calculos
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    
+    //Map the image to the texture
+    glTexImage2D(GL_TEXTURE_2D,                //Always GL_TEXTURE_2D
+                 0,                            //0 for now
+                 GL_RGB,                       //Format OpenGL uses for image
+                 image->width, image->height,  //Width and height
+                 0,                            //The border of the image
+                 GL_RGB, //GL_RGB, because pixels are stored in RGB format
+                 GL_UNSIGNED_BYTE, //GL_UNSIGNED_BYTE, because pixels are stored
+                 //as unsigned numbers
+                 image->pixels);               //The actual pixel data
+}
+
+
+//le borramos el exceso para solo obtener el Path padre
+void getParentPath()
+{
+    for (int i = (int)fullPath.length()-1; i>=0 && fullPath[i] != '/'; i--) {
+        fullPath.erase(i,1);
+    }
+}
+
+
+void initRendering()
+{
+    //Declaración del objeto Image
+    Image* image;
+    GLuint i=0;
+    
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(TEXTURE_COUNT, texName); //Make room for our texture
+    getParentPath();
+    
+    char  ruta[200];
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/burger.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/escuela.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/Fondo.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/ganador.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/i1-1.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/i3-1.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/i4-1.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/i5-1.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/inicio1.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/inicio2.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/instrucciones1.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/instrucciones2.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/materia.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/nina.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/nino.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/nuevojuego1.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/nuevojuego2.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/objetivo.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/pasto.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/perdedor.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/RaquetaNina.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/RaquetaNino.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/salir1.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    sprintf(ruta,"%s%s", fullPath.c_str() , "Texturas/salir2.bmp");
+    image = loadBMP(ruta);loadTexture(image,i++);
+    
+    delete image;
+}
+
+
+
 void resetGameValues(){
     
     //Score
@@ -336,33 +475,114 @@ void timer(int v) {
     glutTimerFunc(50, timer, v);
 }
 
-void paintCube(float x, float y, float z, float sizex, float sizey, float sizez, float r, float g, float b, bool solid, int lineW = 1){
+void text_paintBoy(){
+    //14
+    
+
+}
+void text_paintGirl(){
+    //13
+    
+}
+
+void paintCube(float x, float y, float z, float sizex, float sizey, float sizez, float r, float g, float b, bool boy, int lineW = 1){
+   
+    
+   
+    glPushMatrix();
+    
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+    
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+    if(boy){
+        glColor3f(0.0, 1.0, 1.0);
+        glBindTexture(GL_TEXTURE_2D, texName[14]);
+
+    }
+    else{
+        glColor3f(0.0, 1.0, 0.0);
+        glBindTexture(GL_TEXTURE_2D, texName[13]);
+
+    }
+    
     glPushMatrix();
     glTranslated(x,y,z);
     glScalef(sizex, sizey, sizez);
-    glColor3f(r,g,b);
-    if(solid){
-        glutSolidCube(1);
-    } else {
-        glLineWidth(lineW);
-        glutWireCube(1);
-    }
+    //glColor3f(1.0, 1.0, 1.0);
+    glutSolidCube(1);
+    //glColor3f(1.0, 1.0, 1.0);
     glPopMatrix();
+    
+    
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+    
+
+    glPopMatrix();
+    
+    
 }
 
+
 void paintPadel(Padel p){
-    paintCube(p.x, p.y, p.z, p.sizex, p.sizey, p.sizez, p.r, p.g, p.b, true);
-    paintCube(p.x, p.y, p.z, p.sizex, p.sizey, p.sizez, 255, 0, 0, false, 5);
+    
+    paintCube(p.x, p.y, p.z, p.sizex, p.sizey, p.sizez, p.r, p.g, p.b, p.boy);
+    //paintCube(p.x, p.y, p.z, p.sizex, p.sizey, p.sizez, 255, 0, 0, false, 5);
+}
+
+void text_bg_grass(){
+    
+    glEnable(GL_TEXTURE_2D);
+    
+    //Elegir la textura del Quads: angulo cambia con el timer
+    glBindTexture(GL_TEXTURE_2D, texName[18]);
+    
+    glBegin(GL_QUADS);
+    //Asignar la coordenada de textura 0,0 al vertice
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-4.0f, -4.0f, -1);
+    //Asignar la coordenada de textura 1,0 al vertice
+    glTexCoord2f(1.0f, 0.0f); ///-
+    glVertex3f(4.0f, -4.0f, -1);
+    //Asignar la coordenada de textura 1,1 al vertice
+    glTexCoord2f(1.0f,1.0f); //-
+    //glTexCoord2f(1.0f,1.0f);
+    //glTexCoord2f(2.0f,5.0f);
+    glVertex3f(4.0f, 4.0f, -1);
+    //Asignar la coordenada de textura 0,1 al vertice
+    glTexCoord2f(0.0f, 1.0f);
+    //glTexCoord2f(0.0f, 5.0f);
+    
+    glVertex3f(-4.0f, 4.0f, -1);
+    glEnd();
+    
+    
 }
 
 void paintTable(){
+    
+    glColor3f(1.0, 1.0, 1.0);
+
+    text_bg_grass();
+
     glPushMatrix();
+    
+    
     glScalef(8,8,1);
+    
+    glColor3f(1.0, 1.0, 1.0);
     glColor3ub(255,140,0);
     glLineWidth(5);
     glutWireCube(1);
+    //glColor3f(1.0, 1.0, 1.0);
+
     glPopMatrix();
     
+    glColor3f(1.0, 1.0, 1.0);
+
+    //LINEAS DE
     glBegin(GL_LINES);
     glVertex2d(0, -4);
     glVertex2d(0, 4);
@@ -377,24 +597,52 @@ void paintTable(){
     glVertex2d(-4, -4);
     glVertex2d(4, -4);
     glEnd();
+
+    glColor3b(1.0, 1.0, 1.0);
+
 }
 
 void paintSphere(float x, float y, float z, float rad, int slices, int stacks, float r, float g, float b, bool solid, int lineW = 1){
+    
     glPushMatrix();
     glTranslated(x,y,z);
-    glColor3f(r,g,b);
-    if(solid){
-        glutSolidSphere(rad,slices,stacks);
-    } else {
-        glLineWidth(lineW);
-        glutWireSphere(rad,slices,stacks);
-    }
+    //glColor3f(r,g,b);
+    
+    glEnable(GL_TEXTURE_GEN_S);
+    glEnable(GL_TEXTURE_GEN_T);
+    
+    
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+    
+    glColor3f(1.0, 1.0, 1.0);
+    glEnable(GL_TEXTURE_2D);
+
+    GLUquadricObj *qobj;
+    
+    glBindTexture(GL_TEXTURE_2D, texName[0]);
+    
+    glPushMatrix();
+    qobj = gluNewQuadric();
+    //glTranslatef(x, y, z);
+    gluQuadricDrawStyle(qobj, GLU_FILL); /* smooth shaded */
+    gluSphere(qobj, rad, slices, stacks);
+    glutSolidSphere(rad,slices,stacks);
     glPopMatrix();
+    
+    
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+    
+    glPopMatrix();
+    
 }
 
 void paintBall(){
     paintSphere(ball.x, ball.y, ball.z, ball.rad, ball.slices, ball.stacks, ball.r, ball.g, ball.b, true);
-    paintSphere(ball.x, ball.y, ball.z, ball.rad, ball.slices/2, ball.stacks/2, ball.r, 0, 0, false, 3);
 }
 
 void writeBigStringWide(GLdouble x, GLdouble y, string s, float size, int r, int g, int b){
@@ -413,8 +661,9 @@ void writeBigStringWide(GLdouble x, GLdouble y, string s, float size, int r, int
         glutStrokeCharacter(GLUT_STROKE_ROMAN, s[i]);
                  
     }
-    
     glPopMatrix();
+    glColor3f(1.0, 1.0, 1.0);
+
 }
 
 void displayPoints(){
@@ -426,8 +675,11 @@ void displayPoints(){
 
 
 void display() {
+    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
+    glColor3f(1.0, 1.0, 1.0);
+
     glPushMatrix();
     {
         glRotatef(ball.x * 10, 0, 1, 0);
@@ -522,6 +774,8 @@ void init() {
     objInit();
 }
 
+
+//MARK: MAIN
 int main(int argc, char** argv)
 {
     glutInit(&argc,argv);
@@ -537,6 +791,8 @@ int main(int argc, char** argv)
     glutInitWindowSize(500,500);
     glutInitWindowPosition(100,100);
     glutCreateWindow("Pong");
+    
+    initRendering();
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
     init();
@@ -556,3 +812,214 @@ int main(int argc, char** argv)
     glutTimerFunc(50, timer, 0);
     glutMainLoop();
 }
+
+
+
+
+
+#include <assert.h>
+#include <fstream>
+
+#include "imageloader.h"
+
+using namespace std;
+
+Image::Image(char* ps, int w, int h) : pixels(ps), width(w), height(h)
+{
+    
+}
+
+Image::~Image()
+{
+    delete[] pixels;
+}
+
+namespace
+{
+    //Converts a four-character array to an integer, using little-endian form
+    int toInt(const char* bytes)
+    {
+        return (int)(((unsigned char)bytes[3] << 24) |
+                     ((unsigned char)bytes[2] << 16) |
+                     ((unsigned char)bytes[1] << 8) |
+                     (unsigned char)bytes[0]);
+    }
+    
+    //Converts a two-character array to a short, using little-endian form
+    short toShort(const char* bytes)
+    {
+        return (short)(((unsigned char)bytes[1] << 8) |
+                       (unsigned char)bytes[0]);
+    }
+    
+    //Reads the next four bytes as an integer, using little-endian form
+    int readInt(ifstream &input)
+    {
+        char buffer[4];
+        input.read(buffer, 4);
+        return toInt(buffer);
+    }
+    
+    //Reads the next two bytes as a short, using little-endian form
+    short readShort(ifstream &input)
+    {
+        char buffer[2];
+        input.read(buffer, 2);
+        return toShort(buffer);
+    }
+    
+    //Just like auto_ptr, but for arrays
+    template<class T>
+    class auto_array
+    {
+    private:
+        T* array;
+        mutable bool isReleased;
+    public:
+        explicit auto_array(T* array_ = NULL) :
+        array(array_), isReleased(false)
+        {
+        }
+        
+        auto_array(const auto_array<T> &aarray)
+        {
+            array = aarray.array;
+            isReleased = aarray.isReleased;
+            aarray.isReleased = true;
+        }
+        
+        ~auto_array()
+        {
+            if (!isReleased && array != NULL)
+            {
+                delete[] array;
+            }
+        }
+        
+        T* get() const
+        {
+            return array;
+        }
+        
+        T &operator*() const
+        {
+            return *array;
+        }
+        
+        void operator=(const auto_array<T> &aarray)
+        {
+            if (!isReleased && array != NULL)
+            {
+                delete[] array;
+            }
+            array = aarray.array;
+            isReleased = aarray.isReleased;
+            aarray.isReleased = true;
+        }
+        
+        T* operator->() const
+        {
+            return array;
+        }
+        
+        T* release()
+        {
+            isReleased = true;
+            return array;
+        }
+        
+        void reset(T* array_ = NULL)
+        {
+            if (!isReleased && array != NULL)
+            {
+                delete[] array;
+            }
+            array = array_;
+        }
+        
+        T* operator+(int i)
+        {
+            return array + i;
+        }
+        
+        T &operator[](int i)
+        {
+            return array[i];
+        }
+    };
+}
+
+Image* loadBMP(const char* filename)
+{
+    ifstream input;
+    input.open(filename, ifstream::binary);
+    assert(!input.fail() || !"Could not find file");
+    char buffer[2];
+    input.read(buffer, 2);
+    assert(buffer[0] == 'B' && buffer[1] == 'M' || !"Not a bitmap file");
+    input.ignore(8);
+    int dataOffset = readInt(input);
+    
+    //Read the header
+    int headerSize = readInt(input);
+    int width;
+    int height;
+    switch (headerSize)
+    {
+        case 40:
+            //V3
+            width = readInt(input);
+            height = readInt(input);
+            input.ignore(2);
+            assert(readShort(input) == 24 || !"Image is not 24 bits per pixel");
+            assert(readShort(input) == 0 || !"Image is compressed");
+            break;
+        case 12:
+            //OS/2 V1
+            width = readShort(input);
+            height = readShort(input);
+            input.ignore(2);
+            assert(readShort(input) == 24 || !"Image is not 24 bits per pixel");
+            break;
+        case 64:
+            //OS/2 V2
+            assert(!"Can't load OS/2 V2 bitmaps");
+            break;
+        case 108:
+            //Windows V4
+            assert(!"Can't load Windows V4 bitmaps");
+            break;
+        case 124:
+            //Windows V5
+            assert(!"Can't load Windows V5 bitmaps");
+            break;
+        default:
+            assert(!"Unknown bitmap format");
+    }
+    
+    //Read the data
+    int bytesPerRow = ((width * 3 + 3) / 4) * 4 - (width * 3 % 4);
+    int size = bytesPerRow * height;
+    auto_array<char> pixels(new char[size]);
+    input.seekg(dataOffset, ios_base::beg);
+    input.read(pixels.get(), size);
+    
+    //Get the data into the right format
+    auto_array<char> pixels2(new char[width * height * 3]);
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                pixels2[3 * (width * y + x) + c] =
+                pixels[bytesPerRow * y + 3 * x + (2 - c)];
+            }
+        }
+    }
+    
+    input.close();
+    return new Image(pixels2.release(), width, height);
+}
+
+

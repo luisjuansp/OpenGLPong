@@ -32,6 +32,31 @@
 		1BB793551CB4CEC1005B5633 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		1BB793561CB4CEC1005B5633 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		1BB7935A1CB4CF03005B5633 /* bounce.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bounce.wav; sourceTree = "<group>"; };
+		1BB7935B1CB5730A005B5633 /* imageloader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = imageloader.h; sourceTree = "<group>"; };
+		1BB793751CB5779D005B5633 /* burger.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = burger.bmp; path = Texturas/burger.bmp; sourceTree = "<group>"; };
+		1BB793761CB5779D005B5633 /* escuela.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = escuela.bmp; path = Texturas/escuela.bmp; sourceTree = "<group>"; };
+		1BB793771CB5779D005B5633 /* Fondo.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = Fondo.bmp; path = Texturas/Fondo.bmp; sourceTree = "<group>"; };
+		1BB793781CB5779D005B5633 /* ganador.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = ganador.bmp; path = Texturas/ganador.bmp; sourceTree = "<group>"; };
+		1BB793791CB5779D005B5633 /* i1-1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "i1-1.bmp"; path = "Texturas/i1-1.bmp"; sourceTree = "<group>"; };
+		1BB7937A1CB5779D005B5633 /* i3-1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "i3-1.bmp"; path = "Texturas/i3-1.bmp"; sourceTree = "<group>"; };
+		1BB7937B1CB5779D005B5633 /* i4-1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "i4-1.bmp"; path = "Texturas/i4-1.bmp"; sourceTree = "<group>"; };
+		1BB7937C1CB5779D005B5633 /* i5-1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "i5-1.bmp"; path = "Texturas/i5-1.bmp"; sourceTree = "<group>"; };
+		1BB7937D1CB5779D005B5633 /* inicio1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = inicio1.bmp; path = Texturas/inicio1.bmp; sourceTree = "<group>"; };
+		1BB7937E1CB5779D005B5633 /* inicio2.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = inicio2.bmp; path = Texturas/inicio2.bmp; sourceTree = "<group>"; };
+		1BB7937F1CB5779D005B5633 /* instrucciones1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = instrucciones1.bmp; path = Texturas/instrucciones1.bmp; sourceTree = "<group>"; };
+		1BB793801CB5779D005B5633 /* instrucciones2.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = instrucciones2.bmp; path = Texturas/instrucciones2.bmp; sourceTree = "<group>"; };
+		1BB793811CB5779D005B5633 /* materia.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = materia.bmp; path = Texturas/materia.bmp; sourceTree = "<group>"; };
+		1BB793821CB5779D005B5633 /* nina.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = nina.bmp; path = Texturas/nina.bmp; sourceTree = "<group>"; };
+		1BB793831CB5779D005B5633 /* nino.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = nino.bmp; path = Texturas/nino.bmp; sourceTree = "<group>"; };
+		1BB793841CB5779D005B5633 /* nuevojuego1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = nuevojuego1.bmp; path = Texturas/nuevojuego1.bmp; sourceTree = "<group>"; };
+		1BB793851CB5779D005B5633 /* nuevojuego2.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = nuevojuego2.bmp; path = Texturas/nuevojuego2.bmp; sourceTree = "<group>"; };
+		1BB793861CB5779D005B5633 /* objetivo.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = objetivo.bmp; path = Texturas/objetivo.bmp; sourceTree = "<group>"; };
+		1BB793871CB5779D005B5633 /* pasto.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = pasto.bmp; path = Texturas/pasto.bmp; sourceTree = "<group>"; };
+		1BB793881CB5779D005B5633 /* perdedor.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = perdedor.bmp; path = Texturas/perdedor.bmp; sourceTree = "<group>"; };
+		1BB793891CB5779D005B5633 /* RaquetaNina.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = RaquetaNina.bmp; path = Texturas/RaquetaNina.bmp; sourceTree = "<group>"; };
+		1BB7938A1CB5779D005B5633 /* RaquetaNino.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = RaquetaNino.bmp; path = Texturas/RaquetaNino.bmp; sourceTree = "<group>"; };
+		1BB7938B1CB5779D005B5633 /* salir1.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = salir1.bmp; path = Texturas/salir1.bmp; sourceTree = "<group>"; };
+		1BB7938C1CB5779D005B5633 /* salir2.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = salir2.bmp; path = Texturas/salir2.bmp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,9 +96,42 @@
 			isa = PBXGroup;
 			children = (
 				1BB7934C1CB4CE85005B5633 /* main.cpp */,
+				1BB7935B1CB5730A005B5633 /* imageloader.h */,
+				1BB7935C1CB57438005B5633 /* Texturas */,
 				1BB7935A1CB4CF03005B5633 /* bounce.wav */,
 			);
 			path = OpenGLPongXcode;
+			sourceTree = "<group>";
+		};
+		1BB7935C1CB57438005B5633 /* Texturas */ = {
+			isa = PBXGroup;
+			children = (
+				1BB793751CB5779D005B5633 /* burger.bmp */,
+				1BB793761CB5779D005B5633 /* escuela.bmp */,
+				1BB793771CB5779D005B5633 /* Fondo.bmp */,
+				1BB793781CB5779D005B5633 /* ganador.bmp */,
+				1BB793791CB5779D005B5633 /* i1-1.bmp */,
+				1BB7937A1CB5779D005B5633 /* i3-1.bmp */,
+				1BB7937B1CB5779D005B5633 /* i4-1.bmp */,
+				1BB7937C1CB5779D005B5633 /* i5-1.bmp */,
+				1BB7937D1CB5779D005B5633 /* inicio1.bmp */,
+				1BB7937E1CB5779D005B5633 /* inicio2.bmp */,
+				1BB7937F1CB5779D005B5633 /* instrucciones1.bmp */,
+				1BB793801CB5779D005B5633 /* instrucciones2.bmp */,
+				1BB793811CB5779D005B5633 /* materia.bmp */,
+				1BB793821CB5779D005B5633 /* nina.bmp */,
+				1BB793831CB5779D005B5633 /* nino.bmp */,
+				1BB793841CB5779D005B5633 /* nuevojuego1.bmp */,
+				1BB793851CB5779D005B5633 /* nuevojuego2.bmp */,
+				1BB793861CB5779D005B5633 /* objetivo.bmp */,
+				1BB793871CB5779D005B5633 /* pasto.bmp */,
+				1BB793881CB5779D005B5633 /* perdedor.bmp */,
+				1BB793891CB5779D005B5633 /* RaquetaNina.bmp */,
+				1BB7938A1CB5779D005B5633 /* RaquetaNino.bmp */,
+				1BB7938B1CB5779D005B5633 /* salir1.bmp */,
+				1BB7938C1CB5779D005B5633 /* salir2.bmp */,
+			);
+			name = Texturas;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -251,6 +309,7 @@
 				1BB793521CB4CE85005B5633 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -62,14 +62,19 @@ bool running = false; //Pause and Unpause
 bool game = false; //Start the game
 int score1 = 0;
 int score2 = 0;
+int shrink = 0;
+int shrinking = 3;
 int gameState = 0; //Game Has not started// Start at right corner
 //0 game not started
 //1 Right won last
 //2 left won last
+float orientation = 0;
 
+bool mouseIn = false;
 
 /////AUDIO!
-#ifdef __LINUX__
+#ifdef __APPLE__ 
+#else
 
 // Buffers hold sound data.
 ALuint Buffer;
@@ -94,7 +99,7 @@ ALboolean LoadALData()
     ALvoid* data;
     ALsizei freq;
     ALboolean loop;
-    signed char *sfile = (signed char*)"bounce.wav";
+    signed char *sfile = (signed char*) ("bounce.wav"); //fullPath.c_str() + 
     ALbyte* file = sfile;
     
     // Load wav data into a buffer.
@@ -109,15 +114,16 @@ ALboolean LoadALData()
     
     // Bind buffer with a source.
     alGenSources(1, &Source);
+
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
     
-    alSourcei (Source, AL_BUFFER,   Buffer   );
+    alSourcei (Source, AL_BUFFER,   Buffer);
     alSourcef (Source, AL_PITCH,    1.0f     );
     alSourcef (Source, AL_GAIN,     1.0f     );
     alSourcefv(Source, AL_POSITION, SourcePos);
     alSourcefv(Source, AL_VELOCITY, SourceVel);
-    alSourcei (Source, AL_LOOPING,  loop     );
+    alSourcei (Source, AL_LOOPING,  AL_FALSE);
     
     // Do another error check and return.
     if (alGetError() == AL_NO_ERROR)
@@ -139,6 +145,7 @@ void KillALData()
     alDeleteSources(1, &Source);
     alutExit();
 }
+
 #endif
 
 void objInit(){
@@ -315,7 +322,7 @@ void initRendering()
 
 
 void resetGameValues(){
-    
+
     //Score
     score1 = 0;
     score2 = 0;
@@ -335,9 +342,9 @@ struct Rectangle
 
 bool checkCollision(Rectangle rect1, Rectangle rect2){
     return (
-            rect1.w + rect2.w > abs(rect1.x - rect2.x) and
-            rect1.h + rect2.h > abs(rect1.y - rect2.y)
-            );
+        rect1.w + rect2.w > abs(rect1.x - rect2.x) and
+        rect1.h + rect2.h > abs(rect1.y - rect2.y)
+        );
 }
 
 Rectangle getBallRect(Ball b){
@@ -360,7 +367,8 @@ Rectangle getPadelRect(Padel p){
 
 void playAudioLinux(){
     ///AUDIO
-    #ifdef __LINUX__
+    #ifdef __APPLE__ 
+    #else
     alSourceStop(Source);
     alSourcePlay(Source);
     #endif
@@ -368,23 +376,22 @@ void playAudioLinux(){
 }
 
 void startGame(){
-    
     int side = 1;
     int upDown = 1;
     switch(gameState){
         case 1  :
-            side = -1;
-            upDown = (1 - 2 * (rand() % 2));
-            break;
+        side = -1;
+        upDown = (1 - 2 * (rand() % 2));
+        break;
         case 2  :
-            side = 1;
-            upDown = (1 - 2 * (rand() % 2));
-            break;
-            
+        side = 1;
+        upDown = (1 - 2 * (rand() % 2));
+        break;
+
         default :
-            side = 1;
-            upDown = 1;
-            break;
+        side = 1;
+        upDown = 1;
+        break;
     }
     
     double angle = rand() % 45 + 22.5;
@@ -398,7 +405,7 @@ void checkCollisions(){
     if(abs(ball.y) + ball.rad > 4){
         ball.diry *= -1;
         playAudioLinux();
-    
+        shrink = shrinking;
     }
     
     Rectangle rb;
@@ -411,6 +418,7 @@ void checkCollisions(){
     //Collision with left panel
     if(checkCollision(rb, rp1)){
         (ball.dirx < 0) ? ball.dirx = -ball.dirx : ball.dirx;
+        shrink = shrinking;
         
         //AUDIO
         playAudioLinux();
@@ -419,6 +427,7 @@ void checkCollisions(){
         //Collision with right panel
     } else if(checkCollision(rb, rp2)){
         (ball.dirx > 0) ? ball.dirx = -ball.dirx : ball.dirx;
+        shrink = shrinking;
         
         //AUDIO
         playAudioLinux();
@@ -470,9 +479,10 @@ void update(){
 void timer(int v) {
     if(running){
         update();
-        glutPostRedisplay();
     }
-    glutTimerFunc(50, timer, v);
+    glutTimerFunc(20, timer, v);
+    glutPostRedisplay();
+
 }
 
 void text_paintBoy(){
@@ -524,12 +534,24 @@ void paintCube(float x, float y, float z, float sizex, float sizey, float sizez,
     
     
 }
-
+void paintCube2(float x, float y, float z, float sizex, float sizey, float sizez, float r, float g, float b, bool solid, int lineW = 1){
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glScalef(sizex, sizey, sizez);
+    glColor3f(r,g,b);
+    if(solid){
+        glutSolidCube(1);
+    } else {
+        glLineWidth(lineW);
+        glutWireCube(1);
+    }
+    glPopMatrix();
+}
 
 void paintPadel(Padel p){
     
     paintCube(p.x, p.y, p.z, p.sizex, p.sizey, p.sizez, p.r, p.g, p.b, p.boy);
-    //paintCube(p.x, p.y, p.z, p.sizex, p.sizey, p.sizez, 255, 0, 0, false, 5);
+    paintCube2(p.x, p.y, p.z, p.sizex, p.sizey, p.sizez, 255, 0, 0, false, 5);
 }
 
 void text_bg_grass(){
@@ -602,7 +624,7 @@ void paintTable(){
 
 }
 
-void paintSphere(float x, float y, float z, float rad, int slices, int stacks, float r, float g, float b, bool solid, int lineW = 1){
+void paintSphere(float x, float y, float z, float rad, int slices, int stacks, float r, float g, float b, bool solid,bool change, int lineW = 1 ){
     
     glPushMatrix();
     glTranslated(x,y,z);
@@ -610,10 +632,6 @@ void paintSphere(float x, float y, float z, float rad, int slices, int stacks, f
     
     glEnable(GL_TEXTURE_GEN_S);
     glEnable(GL_TEXTURE_GEN_T);
-    
-    
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
@@ -623,7 +641,14 @@ void paintSphere(float x, float y, float z, float rad, int slices, int stacks, f
 
     GLUquadricObj *qobj;
     
-    glBindTexture(GL_TEXTURE_2D, texName[0]);
+    if (!change) {
+        //cout<<"notchanged"<<endl;
+        glBindTexture(GL_TEXTURE_2D, texName[0]);
+
+    }else{
+        glBindTexture(GL_TEXTURE_2D, texName[1]);
+
+    }
     
     glPushMatrix();
     qobj = gluNewQuadric();
@@ -641,12 +666,39 @@ void paintSphere(float x, float y, float z, float rad, int slices, int stacks, f
     
 }
 
+void paintSphere2(float x, float y, float z, float rad, int slices, int stacks, float r, float g, float b, bool solid, int lineW = 1){
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glColor3f(r,g,b);
+    if(solid){
+        glutSolidSphere(rad,slices,stacks);
+    } else {
+        glLineWidth(lineW);
+        glutWireSphere(rad,slices,stacks);
+    }
+    glPopMatrix();
+}
 void paintBall(){
-    paintSphere(ball.x, ball.y, ball.z, ball.rad, ball.slices, ball.stacks, ball.r, ball.g, ball.b, true);
+
+    if(shrink){
+        glPushMatrix();
+        {
+            float size = 0.75;
+            glScalef(size, size, size);
+            paintSphere(ball.x / size, ball.y / size, ball.z / size, ball.rad, ball.slices, ball.stacks, ball.r, ball.g, ball.b, true, true);
+            paintSphere2(ball.x / size, ball.y / size, ball.z / size, ball.rad, ball.slices/2, ball.stacks/2, ball.r, 0, 0, false, 3);
+            shrink--;
+        }
+        glPopMatrix();
+    }
+    else {
+        paintSphere(ball.x, ball.y, ball.z, ball.rad, ball.slices, ball.stacks, ball.r, ball.g, ball.b, false, false);
+        paintSphere2(ball.x, ball.y, ball.z, ball.rad, ball.slices/2, ball.stacks/2, ball.r, 0, 0, false, 3);
+    }
 }
 
 void writeBigStringWide(GLdouble x, GLdouble y, string s, float size, int r, int g, int b){
-    
+
     unsigned int i;
     glMatrixMode(GL_MODELVIEW);
     
@@ -659,7 +711,7 @@ void writeBigStringWide(GLdouble x, GLdouble y, string s, float size, int r, int
     
     for (i = 0; i < s.size(); i++){
         glutStrokeCharacter(GLUT_STROKE_ROMAN, s[i]);
-                 
+
     }
     glPopMatrix();
     glColor3f(1.0, 1.0, 1.0);
@@ -667,34 +719,147 @@ void writeBigStringWide(GLdouble x, GLdouble y, string s, float size, int r, int
 }
 
 void displayPoints(){
+
     
+    writeBigStringWide(-2, -2.6, "Enrique Hernandez A01185423", 0.003, 0, 0, 0);
+    writeBigStringWide(-2, -2.3, "Luis Juan Sanchez A01183634", 0.003, 0, 0, 0);
     writeBigStringWide(-2, 2, to_string(score1), 0.009, 0, 0, 0);
     writeBigStringWide(2, 2, to_string(score2), 0.009, 0, 0, 0);
     
 }
 
+//
+//void display() {
+//    
+//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//    
+//    glColor3f(1.0, 1.0, 1.0);
+//
+//    glPushMatrix();
+//    {
+//
+//        glRotatef(orientation, 0, 0, 1);
+//        glRotatef(ball.x * 10, 0, 1, 0);
+//        
+//        paintTable();
+//        
+//        paintPadel(p1);
+//        paintPadel(p2);
+//        
+//        paintBall();
+//        
+//        displayPoints();
+//
+//    }
+//    glPopMatrix();
+//    
+//    glutSwapBuffers();
+//}
+
+void boton1(){
+    
+
+    //glPushMatrix()
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    
+    //Elegir la textura del Quads: angulo cambia con el timer
+    if (!mouseIn) {
+        glBindTexture(GL_TEXTURE_2D, texName[8]);
+
+        
+    }else{
+        glBindTexture(GL_TEXTURE_2D, texName[9]);
+
+        
+    }
+    
+    glBegin(GL_QUADS);
+    
+    float x = 2.0;
+    float y = 1.0;
+    
+    //Asignar la coordenada de textura 0,0 al vertice
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-x, -y, 0);
+    //Asignar la coordenada de textura 1,0 al vertice
+    glTexCoord2f(1.0f, 0.0f); ///-
+    glVertex3f(x, -y, 0);
+    //Asignar la coordenada de textura 1,1 al vertice
+    glTexCoord2f(1.0f,1.0f); //-
+    //glTexCoord2f(1.0f,1.0f);
+    //glTexCoord2f(2.0f,5.0f);
+    glVertex3f(x, y, 0);
+    //Asignar la coordenada de textura 0,1 al vertice
+    glTexCoord2f(0.0f, 1.0f);
+    //glTexCoord2f(0.0f, 5.0f);
+    
+    glVertex3f(-x, y, 0);
+    glEnd();
+    
+}
+void menu(){
+    
+    
+    //Habilitar el uso de texturas
+    glEnable(GL_TEXTURE_2D);
+    
+    //Elegir la textura del Quads: angulo cambia con el timer
+    glBindTexture(GL_TEXTURE_2D, texName[2]);
+    
+    glBegin(GL_QUADS);
+    //Asignar la coordenada de textura 0,0 al vertice
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-4.0f, -4.0f, 0);
+    //Asignar la coordenada de textura 1,0 al vertice
+    glTexCoord2f(1.0f, 0.0f); ///-
+    glVertex3f(4.0f, -4.0f, 0);
+    //Asignar la coordenada de textura 1,1 al vertice
+    glTexCoord2f(1.0f,1.0f); //-
+    //glTexCoord2f(1.0f,1.0f);
+    //glTexCoord2f(2.0f,5.0f);
+    glVertex3f(4.0f, 4.0f, 0);
+    //Asignar la coordenada de textura 0,1 al vertice
+    glTexCoord2f(0.0f, 1.0f);
+    //glTexCoord2f(0.0f, 5.0f);
+    
+    glVertex3f(-4.0f, 4.0f, 0);
+    glEnd();
+}
+
+
 
 void display() {
-    
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
     glColor3f(1.0, 1.0, 1.0);
 
-    glPushMatrix();
-    {
-        glRotatef(ball.x * 10, 0, 1, 0);
+    
+    if(game){
+        glPushMatrix();
+        {
+            
+            glRotatef(orientation, 0, 0, 1);
+            glRotatef(ball.x * 10, 0, 1, 0);
+            
+            paintTable();
+            
+            paintPadel(p1);
+            paintPadel(p2);
+            
+            paintBall();
+            
+            displayPoints();
+            
+        }
+        glPopMatrix();
+    } else {
         
-        paintTable();
-        
-        paintPadel(p1);
-        paintPadel(p2);
-        
-        paintBall();
-        
-        displayPoints();
-
+        glPushMatrix();
+            boton1();
+            menu();
+        glPopMatrix();
     }
-    glPopMatrix();
     
     glutSwapBuffers();
 }
@@ -703,10 +868,36 @@ void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, ((double)w)/h, 1, 100);
+    gluPerspective(60, 1, 1, 100);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(0, 0, 7.5, 0, 0, 0, 0, 1, 0);
+}
+
+void motionfunc (int x, int y){
+    float xx = (x - 250) / 62.5;
+    float yy = -(y - 250) / 62.5;
+    //cout<<xx<<" : "<<yy<<endl;
+    if(abs(xx) < 1.75 && abs(yy) < 0.85){
+        mouseIn = true;
+    }else {
+        mouseIn = false;
+    }
+}
+void mousefunc (int button, int state, int x, int y){
+    float xx = (x - 250) / 62.5;
+    float yy = -(y - 250) / 62.5;
+    //cout<<xx<<" : "<<yy<<endl;
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    {
+        if(abs(xx) < 1.75 && abs(yy) < 0.85){
+            if(!game){
+                startGame();
+                game = true;
+            }
+            running = true;
+        }
+    }
 }
 
 void myKeyboard(unsigned char theKey, int mouseX, int mouseY){
@@ -714,40 +905,51 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY){
         case 'I':
         case 'i':
             // iniciar
-            if(!game){
-                startGame();
-                game = true;
-            }
-            running = true;
-            break;
-            
+        if(!game){
+            startGame();
+            game = true;
+        }
+        running = true;
+        break;
+
         case 'P':
         case 'p':
             //stop;
-            running = false;
-            break;
-            
+        running = false;
+        break;
+
+        case 'O':
+        case 'o':
+        (orientation == 0) ? orientation = 90 : orientation = 0;
+        break;
+
         case 'R':
         case 'r':
             // reset
-            objInit();
-            timer(0);
-            running = false;
-            game = false;
-            resetGameValues();
-            break;
-            
+        objInit();
+        //timer(0);
+        running = false;
+        game = false;
+        resetGameValues();
+        break;
+
+        case 'W':
         case 'w':
-            p1.speed = 0.1;
-            break;
-            
+        case 'A':
+        case 'a':
+        p1.speed = 0.1;
+        break;
+
+        case 'S':
         case 's':
-            p1.speed = -0.1;
-            break;
-            
+        case 'D':
+        case 'd':
+        p1.speed = -0.1;
+        break;
+
         case 27:
-            exit(0);
-            break;
+        exit(0);
+        break;
     }
 }
 
@@ -757,12 +959,14 @@ void SpecialInput(int key, int x, int y)
     switch(key)
     {
         case GLUT_KEY_UP:
-            p2.speed = 0.1;
-            break;
-            
+        case GLUT_KEY_LEFT:
+        p2.speed = 0.1;
+        break;
+
         case GLUT_KEY_DOWN:
-            p2.speed = -0.1;
-            break;
+        case GLUT_KEY_RIGHT:
+        p2.speed = -0.1;
+        break;
     }
 }
 
@@ -781,7 +985,8 @@ int main(int argc, char** argv)
     glutInit(&argc,argv);
     
     ///AUDIO
-    #ifdef __LINUX__
+    #ifdef __APPLE__
+    #else
     alutInit(&argc,argv);
     #endif
     
@@ -795,10 +1000,12 @@ int main(int argc, char** argv)
     initRendering();
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
+    getParentPath();
     init();
     
     //AUDIO
-    #ifdef __LINUX__
+    #ifdef __APPLE__ 
+    #else
     if (LoadALData() == AL_FALSE)
         return -1;
     SetListenerValues();
@@ -808,8 +1015,10 @@ int main(int argc, char** argv)
     
     
     glutKeyboardFunc(myKeyboard);
+    glutMouseFunc(mousefunc);
     glutSpecialFunc(SpecialInput);
-    glutTimerFunc(50, timer, 0);
+    glutPassiveMotionFunc(motionfunc);
+    glutTimerFunc(10, timer, 0);
     glutMainLoop();
 }
 

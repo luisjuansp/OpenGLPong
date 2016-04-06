@@ -69,8 +69,10 @@ int gameState = 0; //Game Has not started// Start at right corner
 //1 Right won last
 //2 left won last
 float orientation = 0;
-
+int width = 500;
+int height = 500;
 bool mouseIn = false;
+
 
 /////AUDIO!
 #ifdef __APPLE__ 
@@ -865,6 +867,8 @@ void display() {
 }
 
 void reshape(int w, int h) {
+    width = w;
+    height = h;
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -875,22 +879,22 @@ void reshape(int w, int h) {
 }
 
 void motionfunc (int x, int y){
-    float xx = (x - 250) / 62.5;
-    float yy = -(y - 250) / 62.5;
-    //cout<<xx<<" : "<<yy<<endl;
-    if(abs(xx) < 1.75 && abs(yy) < 0.85){
+    float xx = (x - width / 2.0) / (width / 4.0);
+    float yy = -(y - height / 2.0) / (height / 4.0);
+    cout<<xx<<" : "<<yy<<endl;
+    if(abs(xx) < 1 && abs(yy) < 0.5){
         mouseIn = true;
     }else {
         mouseIn = false;
     }
 }
 void mousefunc (int button, int state, int x, int y){
-    float xx = (x - 250) / 62.5;
-    float yy = -(y - 250) / 62.5;
+    float xx = (x - width / 2.0) / (width / 4.0);
+    float yy = -(y - height / 2.0) / (height / 4.0);
     //cout<<xx<<" : "<<yy<<endl;
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-        if(abs(xx) < 1.75 && abs(yy) < 0.85){
+        if(abs(xx) < 1 && abs(yy) < 0.5){
             if(!game){
                 startGame();
                 game = true;
@@ -993,7 +997,7 @@ int main(int argc, char** argv)
     
     alGetError();
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(500,500);
+    glutInitWindowSize(width,height);
     glutInitWindowPosition(100,100);
     glutCreateWindow("Pong");
     

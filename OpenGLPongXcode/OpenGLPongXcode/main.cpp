@@ -54,14 +54,25 @@ bool running = false; //Pause and Unpause
 bool game = false; //Start the game
 int score1 = 0;
 int score2 = 0;
+int shrink = 0;
+int shrinking = 3;
 int gameState = 0; //Game Has not started// Start at right corner
 //0 game not started
 //1 Right won last
 //2 left won last
-
+float orientation = 0;
+//__FILE__ is a preprocessor macro that expands to full path to the current file.
+string fullPath = __FILE__;
+void getParentPath()
+{
+    for (int i = (int)fullPath.length()-1; i>=0 && fullPath[i] != '/'; i--) {
+        fullPath.erase(i,1);
+    }
+}
 
 /////AUDIO!
-#ifdef __LINUX__
+#ifdef __APPLE__ 
+#else
 
 // Buffers hold sound data.
 ALuint Buffer;
@@ -86,7 +97,7 @@ ALboolean LoadALData()
     ALvoid* data;
     ALsizei freq;
     ALboolean loop;
-    signed char *sfile = (signed char*)"bounce.wav";
+    signed char *sfile = (signed char*) ("bounce.wav"); //fullPath.c_str() + 
     ALbyte* file = sfile;
     
     // Load wav data into a buffer.
@@ -101,15 +112,16 @@ ALboolean LoadALData()
     
     // Bind buffer with a source.
     alGenSources(1, &Source);
+
     if (alGetError() != AL_NO_ERROR)
         return AL_FALSE;
     
-    alSourcei (Source, AL_BUFFER,   Buffer   );
+    alSourcei (Source, AL_BUFFER,   Buffer);
     alSourcef (Source, AL_PITCH,    1.0f     );
     alSourcef (Source, AL_GAIN,     1.0f     );
     alSourcefv(Source, AL_POSITION, SourcePos);
     alSourcefv(Source, AL_VELOCITY, SourceVel);
-    alSourcei (Source, AL_LOOPING,  loop     );
+    alSourcei (Source, AL_LOOPING,  AL_FALSE);
     
     // Do another error check and return.
     if (alGetError() == AL_NO_ERROR)
@@ -131,6 +143,7 @@ void KillALData()
     alDeleteSources(1, &Source);
     alutExit();
 }
+
 #endif
 
 
@@ -153,7 +166,7 @@ void objInit(){
     p1.x = -3.75;
     p1.y = 0;
     p1.z = 0;
-    p1.sizex = 0.25;
+    p1.sizex = 0.5;
     p1.sizey = 2;
     p1.sizez = 1;
     p1.r = 0;
@@ -165,7 +178,7 @@ void objInit(){
     p2.x = 3.75;
     p2.y = 0;
     p2.z = 0;
-    p2.sizex = 0.25;
+    p2.sizex = 0.5;
     p2.sizey = 2;
     p2.sizez = 1;
     p2.r = 0;
@@ -176,7 +189,7 @@ void objInit(){
     
 }
 void resetGameValues(){
-    
+
     //Score
     score1 = 0;
     score2 = 0;
@@ -196,9 +209,9 @@ struct Rectangle
 
 bool checkCollision(Rectangle rect1, Rectangle rect2){
     return (
-            rect1.w + rect2.w > abs(rect1.x - rect2.x) and
-            rect1.h + rect2.h > abs(rect1.y - rect2.y)
-            );
+        rect1.w + rect2.w > abs(rect1.x - rect2.x) and
+        rect1.h + rect2.h > abs(rect1.y - rect2.y)
+        );
 }
 
 Rectangle getBallRect(Ball b){
@@ -221,7 +234,8 @@ Rectangle getPadelRect(Padel p){
 
 void playAudioLinux(){
     ///AUDIO
-    #ifdef __LINUX__
+    #ifdef __APPLE__ 
+    #else
     alSourceStop(Source);
     alSourcePlay(Source);
     #endif
@@ -229,23 +243,22 @@ void playAudioLinux(){
 }
 
 void startGame(){
-    
     int side = 1;
     int upDown = 1;
     switch(gameState){
         case 1  :
-            side = -1;
-            upDown = (1 - 2 * (rand() % 2));
-            break;
+        side = -1;
+        upDown = (1 - 2 * (rand() % 2));
+        break;
         case 2  :
-            side = 1;
-            upDown = (1 - 2 * (rand() % 2));
-            break;
-            
+        side = 1;
+        upDown = (1 - 2 * (rand() % 2));
+        break;
+
         default :
-            side = 1;
-            upDown = 1;
-            break;
+        side = 1;
+        upDown = 1;
+        break;
     }
     
     double angle = rand() % 45 + 22.5;
@@ -259,7 +272,7 @@ void checkCollisions(){
     if(abs(ball.y) + ball.rad > 4){
         ball.diry *= -1;
         playAudioLinux();
-    
+        shrink = shrinking;
     }
     
     Rectangle rb;
@@ -272,6 +285,7 @@ void checkCollisions(){
     //Collision with left panel
     if(checkCollision(rb, rp1)){
         (ball.dirx < 0) ? ball.dirx = -ball.dirx : ball.dirx;
+        shrink = shrinking;
         
         //AUDIO
         playAudioLinux();
@@ -280,6 +294,7 @@ void checkCollisions(){
         //Collision with right panel
     } else if(checkCollision(rb, rp2)){
         (ball.dirx > 0) ? ball.dirx = -ball.dirx : ball.dirx;
+        shrink = shrinking;
         
         //AUDIO
         playAudioLinux();
@@ -393,12 +408,25 @@ void paintSphere(float x, float y, float z, float rad, int slices, int stacks, f
 }
 
 void paintBall(){
-    paintSphere(ball.x, ball.y, ball.z, ball.rad, ball.slices, ball.stacks, ball.r, ball.g, ball.b, true);
-    paintSphere(ball.x, ball.y, ball.z, ball.rad, ball.slices/2, ball.stacks/2, ball.r, 0, 0, false, 3);
+    if(shrink){
+        glPushMatrix();
+        {
+            float size = 0.75;
+            glScalef(size, size, size);
+            paintSphere(ball.x / size, ball.y / size, ball.z / size, ball.rad, ball.slices, ball.stacks, ball.r, ball.g, ball.b, true);
+            paintSphere(ball.x / size, ball.y / size, ball.z / size, ball.rad, ball.slices/2, ball.stacks/2, ball.r, 0, 0, false, 3);
+            shrink--;
+        }
+        glPopMatrix();
+    }
+    else {
+        paintSphere(ball.x, ball.y, ball.z, ball.rad, ball.slices, ball.stacks, ball.r, ball.g, ball.b, true);
+        paintSphere(ball.x, ball.y, ball.z, ball.rad, ball.slices/2, ball.stacks/2, ball.r, 0, 0, false, 3);
+    }
 }
 
 void writeBigStringWide(GLdouble x, GLdouble y, string s, float size, int r, int g, int b){
-    
+
     unsigned int i;
     glMatrixMode(GL_MODELVIEW);
     
@@ -411,14 +439,14 @@ void writeBigStringWide(GLdouble x, GLdouble y, string s, float size, int r, int
     
     for (i = 0; i < s.size(); i++){
         glutStrokeCharacter(GLUT_STROKE_ROMAN, s[i]);
-                 
+
     }
     
     glPopMatrix();
 }
 
 void displayPoints(){
-    
+
     writeBigStringWide(-2, 2, to_string(score1), 0.009, 0, 0, 0);
     writeBigStringWide(2, 2, to_string(score2), 0.009, 0, 0, 0);
     
@@ -430,6 +458,8 @@ void display() {
     
     glPushMatrix();
     {
+
+        glRotatef(orientation, 0, 0, 1);
         glRotatef(ball.x * 10, 0, 1, 0);
         
         paintTable();
@@ -462,40 +492,51 @@ void myKeyboard(unsigned char theKey, int mouseX, int mouseY){
         case 'I':
         case 'i':
             // iniciar
-            if(!game){
-                startGame();
-                game = true;
-            }
-            running = true;
-            break;
-            
+        if(!game){
+            startGame();
+            game = true;
+        }
+        running = true;
+        break;
+
         case 'P':
         case 'p':
             //stop;
-            running = false;
-            break;
-            
+        running = false;
+        break;
+
+        case 'O':
+        case 'o':
+        (orientation == 0) ? orientation = 90 : orientation = 0;
+        break;
+
         case 'R':
         case 'r':
             // reset
-            objInit();
-            timer(0);
-            running = false;
-            game = false;
-            resetGameValues();
-            break;
-            
+        objInit();
+        timer(0);
+        running = false;
+        game = false;
+        resetGameValues();
+        break;
+
+        case 'W':
         case 'w':
-            p1.speed = 0.1;
-            break;
-            
+        case 'A':
+        case 'a':
+        p1.speed = 0.1;
+        break;
+
+        case 'S':
         case 's':
-            p1.speed = -0.1;
-            break;
-            
+        case 'D':
+        case 'd':
+        p1.speed = -0.1;
+        break;
+
         case 27:
-            exit(0);
-            break;
+        exit(0);
+        break;
     }
 }
 
@@ -505,12 +546,14 @@ void SpecialInput(int key, int x, int y)
     switch(key)
     {
         case GLUT_KEY_UP:
-            p2.speed = 0.1;
-            break;
-            
+        case GLUT_KEY_LEFT:
+        p2.speed = 0.1;
+        break;
+
         case GLUT_KEY_DOWN:
-            p2.speed = -0.1;
-            break;
+        case GLUT_KEY_RIGHT:
+        p2.speed = -0.1;
+        break;
     }
 }
 
@@ -527,7 +570,8 @@ int main(int argc, char** argv)
     glutInit(&argc,argv);
     
     ///AUDIO
-    #ifdef __LINUX__
+    #ifdef __APPLE__
+    #else
     alutInit(&argc,argv);
     #endif
     
@@ -539,10 +583,12 @@ int main(int argc, char** argv)
     glutCreateWindow("Pong");
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
+    getParentPath();
     init();
     
     //AUDIO
-    #ifdef __LINUX__
+    #ifdef __APPLE__ 
+    #else
     if (LoadALData() == AL_FALSE)
         return -1;
     SetListenerValues();
